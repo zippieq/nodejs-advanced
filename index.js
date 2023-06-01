@@ -1,15 +1,22 @@
 const express = require('express');
+const cluster = require('cluster');
+const crypto = require('crypto');
+if(cluster.isMaster){
+    cluster.fork();
+    cluster.fork();
+    cluster.fork();
+    cluster.fork();
 
-
-const app = express();
-
-const doWork = (duration) => {
-    const start = Date.now();
-    while (Date.now() - start < duration) {}
-}
-app.get('/', (req, res) => {
-    doWork(5000);
-    res.send(' Hi There');
-})
-
-app.listen(3000);
+} else {
+    console.log(cluster.isMaster);
+    const app = express();
+    app.get('/', (req, res) => {
+        crypto.pbkdf2('a', 'b', 100000, 512, 'sha512', () => {
+            res.send(' Hi There');
+        });
+    })
+    app.get('/fast', (req, res) => {
+        res.send(' fast');
+    })
+    app.listen(3000);
+};
